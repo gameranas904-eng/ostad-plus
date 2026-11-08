@@ -1,41 +1,37 @@
 exports.handler = async function(event, context) {
-  // التأكد من أن الطلب من نوع POST
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   try {
-    // استخراج الرسالة من جسم الطلب
     const { message } = JSON.parse(event.body);
-    
-    // استدعاء المفتاح السري الذي أضفته في إعدادات Netlify
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
-    // إرسال الطلب إلى خوادم Anthropic
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    if (!apiKey) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'مفتاح Gemini API غير موجود في إعدادات Netlify' })
+      };
+    }
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307', // يمكنك تغييره إلى sonnet إذا أردت
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: message }]
+        contents: [{ parts: [{ text: message }] }]
       })
     });
 
     if (!response.ok) {
-      throw new Error(`Anthropic API Error: ${response.status}`);
+      throw new Error(`Gemini API Error: ${response.status}`);
     }
 
     const data = await response.json();
+    const botReply = data.candidates[0].content.parts[0].text;
 
-    // إعادة رد الذكاء الاصطناعي إلى واجهتك الأمامية
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply: data.content[0].text })
+      body: JSON.stringify({ reply: botReply })
     };
 
   } catch (error) {
@@ -46,4 +42,3 @@ exports.handler = async function(event, context) {
     };
   }
 };
-model: "claude-3-5-sonnet-20241022",
