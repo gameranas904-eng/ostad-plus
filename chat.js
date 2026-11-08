@@ -53,4 +53,56 @@ exports.handler = async (event) => {
   } catch (e) {
     return resp(502, { error: "تعذّر الاتصال بالخدمة، حاول بعد قليل." });
   }
-};
+};// دالة لإرسال الرسالة إلى Netlify Function
+async function sendMessageToBot(userMessage) {
+  try {
+    // الاتصال بالرابط الخاص بالدالة التي أنشأناها
+    const response = await fetch('/.netlify/functions/chat-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message: userMessage }) // إرسال رسالة المستخدم
+    });
+
+    if (!response.ok) {
+      throw new Error('حدث خطأ في الاتصال بالخادم');
+    }
+
+    const data = await response.json();
+    
+    // استخراج رد الذكاء الاصطناعي
+    const botReply = data.reply;
+    
+    // يمكنك هنا استدعاء دالة لعرض الرد في واجهة HTML
+    // مثال: displayMessage(botReply, 'bot');
+    console.log("رد البوت:", botReply);
+    
+    return botReply;
+
+  } catch (error) {
+    console.error("خطأ:", error);
+    return "عذراً، حدث خطأ أثناء الاتصال. حاول مرة أخرى.";
+  }
+}
+
+// مثال على كيفية استخدامها عند النقر على زر الإرسال
+/*
+document.getElementById('send-button').addEventListener('click', async () => {
+    const inputField = document.getElementById('chat-input');
+    const message = inputField.value;
+    
+    if(message.trim() !== '') {
+        // عرض رسالة المستخدم في الواجهة
+        // displayMessage(message, 'user');
+        
+        inputField.value = ''; // تفريغ حقل الإدخال
+        
+        // جلب رد البوت
+        const reply = await sendMessageToBot(message);
+        
+        // عرض رد البوت في الواجهة
+        // displayMessage(reply, 'bot');
+    }
+});
+*/
