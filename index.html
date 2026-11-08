@@ -212,12 +212,81 @@ btn.addEventListener("click",async function(){
  if(!text){return}
  add("u",text);hist.push({role:"user",content:text});q.value="";
  btn.disabled=true;var w=add("a","جارٍ التحضير…");
- try{
-  var r=await fetch("/.netlify/functions/chat-api",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(...)
-  var d=await r.json();
-  if(!r.ok){w.className="m e";w.textContent=d.error||"حدث خطأ، حاول مرة أخرى.";hist.pop()}
-  else{w.textContent=d.reply;hist.push({role:"assistant",content:d.reply})}
- }catch(e){w.className="m e";w.textContent="تعذّر الاتصال، حاول مرة أخرى.";hist.pop()}
+ (function(){
+    var hist = [], 
+        chat = document.getElementById("chat"), 
+        q = document.getElementById("q"), 
+        btn = document.getElementById("send"), 
+        pr = document.getElementById("print");
+
+    function add(c, t) {
+        var d = document.createElement("div");
+        d.className = "m " + c;
+        d.textContent = t;
+        if(chat) {
+            chat.appendChild(d);
+            chat.scrollTop = chat.scrollHeight;
+        }
+    }
+
+    if(btn) {
+        btn.addEventListener("click", async function(){
+            var code = document.getElementById("code");
+            var codeVal = code ? code.value.trim() : "";
+            var text = q ? q.value.trim() : "";
+
+            if(!codeVal) {
+                add("e", "أدخل رمز الدخول أولاً.");
+                return;
+            }
+            if(!text) {
+                return;
+            }
+
+            add("u", text);
+            hist.push({role: "user", content: text});
+            if(q) q.value = "";
+            
+            btn.disabled = true;
+            var w = add("a", "جاري التحضير...");
+
+            try {
+                var r = await fetch("/.netlify/functions/chat-api", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                var d = await r.json();
+                
+                if(!r.ok) {
+                    if(w) w.className = "m e";
+                    if(w) w.textContent = d.error || "حدث خطأ، حاول مرة أخرى.";
+                    hist.pop();
+                } else {
+                    if(w) w.textContent = d.reply;
+                    hist.push({role: "assistant", content: d.reply});
+                }
+            } catch(e) {
+                if(w) w.className = "m e";
+                if(w) w.textContent = "تعذّر الاتصال، حاول مرة أخرى.";
+                hist.pop();
+            }
+            
+            btn.disabled = false;
+        });
+    }
+
+    if(pr) {
+        pr.addEventListener("click", function(){
+            if(chat) {
+                var all = chat.querySelectorAll(".m.a");
+                if(!all.length) return;
+                window.print();
+            }
+        });
+    }
+})();
  btn.disabled=false;
 });
 pr.addEventListener("click",function(){
