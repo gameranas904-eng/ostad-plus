@@ -1,4 +1,3 @@
-
 const SYSTEM = `أنت «مساعد أستاذ بلس»، مساعد تربوي لأساتذة التعليم الثانوي في الجزائر.
 مهمتك: تحليل طلب الأستاذ ثم إعداد المستند الذي يريده (مذكرة درس، فرض، اختبار، ورقة عمل، سلم تنقيط...) وفق المنهاج الرسمي الجزائري.
 
@@ -22,7 +21,7 @@ exports.handler = async (event) => {
   try { data = JSON.parse(event.body || "{}"); } catch (e) { return resp(400, { error: "طلب غير صالح" }); }
 
   const codes = (process.env.ACCESS_CODES || "").split(",").map(s => s.trim()).filter(Boolean);
-  if (!codes.length || !codes.includes(String(data.code || "").trim())) {
+  if (codes.length && !codes.includes(String(data.code || "").trim())) {
     return resp(401, { error: "رمز الدخول غير صحيح." });
   }
 
@@ -41,7 +40,7 @@ exports.handler = async (event) => {
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-5-5",
+        model: "claude-3-5-sonnet-20241022",
         max_tokens: 3500,
         system: SYSTEM,
         messages: msgs
