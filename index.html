@@ -213,7 +213,7 @@ btn.addEventListener("click",async function(){
  add("u",text);hist.push({role:"user",content:text});q.value="";
  btn.disabled=true;var w=add("a","جارٍ التحضير…");
  try{
-  var r=await fetch("/.netlify/functions/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:code,messages:hist})});
+  var r=await fetch("/.netlify/functions/chat-api",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(...)
   var d=await r.json();
   if(!r.ok){w.className="m e";w.textContent=d.error||"حدث خطأ، حاول مرة أخرى.";hist.pop()}
   else{w.textContent=d.reply;hist.push({role:"assistant",content:d.reply})}
